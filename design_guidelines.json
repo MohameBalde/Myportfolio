@@ -1,0 +1,109 @@
+{
+  "theme": "dark",
+  "archetype": "Swiss Brutalist (Dark Tech) - Archetype 4 adapted for Engineering",
+  "design_philosophy": "A modern, highly technical portfolio reflecting precision, networking, and system administration. The design leverages deep obsidian darkness with sharp, electric blue accents (representing connectivity and power). We avoid pure black and generic templates by employing 'Grid Borders' to expose the structural skeleton of the layouts, reinforcing the 'system administrator' persona.",
+  "colors": {
+    "background": {
+      "base": "#050505",
+      "surface": "#0F0F11",
+      "surface_elevated": "#1A1A1D"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "tertiary": "#71717A"
+    },
+    "accent": {
+      "primary": "#0055FF",
+      "primary_hover": "#3B82F6",
+      "primary_glow": "rgba(0, 85, 255, 0.4)",
+      "muted": "#1E3A8A"
+    },
+    "border": {
+      "subtle": "rgba(255, 255, 255, 0.08)",
+      "active": "rgba(255, 255, 255, 0.2)"
+    },
+    "status": {
+      "success": "#10B981",
+      "error": "#EF4444",
+      "warning": "#F59E0B"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Outfit', sans-serif",
+      "body": "'Inter', sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter leading-none text-white",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight text-white",
+      "h4": "text-lg sm:text-xl font-medium text-white",
+      "body": "text-base text-secondary leading-relaxed",
+      "overline_mono": "text-xs font-mono uppercase tracking-[0.2em] text-accent-primary"
+    }
+  },
+  "layout_spacing": {
+    "philosophy": "Generous Spacing (p-12 to p-24) on public pages to let content breathe. Control Room Density (p-4 to p-6) on the Admin Dashboard.",
+    "bento_grid_public": "grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-8. Mix spans (col-span-4, col-span-8) to create asymmetrical interest.",
+    "control_room_admin": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6. Dense layout for metrics and tables.",
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_spacing": "py-24 md:py-32"
+  },
+  "surface_strategies": {
+    "header_nav": "Crystal Glassmorphism: backdrop-blur-xl bg-[#050505]/60 border-b border-white/10 z-50 sticky top-0. Ensures content is visible underneath without losing navigation clarity.",
+    "skills_section": "Grid Borders: border-collapse style. Elements have border-r border-b border-white/10 to create a technical 'blueprint' or 'network matrix' look.",
+    "project_cards": "Tracing Beam & Neumorphism mix: bg-[#0F0F11] border border-white/10 hover:border-accent-primary transition-colors. Add a subtle shadow-lg on hover.",
+    "admin_dashboard": "Flat Solid Surfaces: bg-[#0F0F11] with sharp 1px borders (border-white/10). No glassmorphism in admin to maintain stark data clarity."
+  },
+  "components_usage": {
+    "marketing_pages": "Use pure HTML/Tailwind for layouts to allow bento grids and overlapping elements. Shadcn components ONLY for the contact form inputs and buttons.",
+    "admin_dashboard": "Rely heavily on Shadcn UI (Tables, Dialogs, Dropdowns, Tabs, Forms) customized with the dark theme colors and sharp border-radius (rounded-md max).",
+    "buttons": "Primary CTA: bg-[#0055FF] text-white hover:bg-[#3B82F6] hover:shadow-[0_0_15px_rgba(0,85,255,0.5)] transition-all. Secondary CTA: bg-transparent border border-white/20 text-white hover:border-white/50.",
+    "icons": "Use 'lucide-react' for general UI. If dense technical icons are needed, use 'iconoir-react'."
+  },
+  "motion_interactions": {
+    "hover_states": "All interactive elements MUST have explicit hover text/bg colors. Buttons lift slightly (-translate-y-1).",
+    "transitions": "Use specific transitions: transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease.",
+    "hero_animation": "Implement a subtle 'Terminal Typing' effect for the subtitle or a slow-moving particle/mesh background to represent 'networks'."
+  },
+  "accessibility": {
+    "contrast": "Ensure all text-to-background contrast ratios are at least 4.5:1. Use Text Shadow on hero text if placed over images.",
+    "testing": "MANDATORY: Add data-testid attributes to all interactive elements (e.g., data-testid='contact-submit-button', data-testid='project-card')."
+  },
+  "media": {
+    "images": {
+      "hero_bg": {
+        "url": "https://images.unsplash.com/photo-1775057154553-0f3e8902fea3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhcmslMjBuZXR3b3JrJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3NzU2NjYwOTN8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract geometric lines and shapes on black background - use as Hero background overlay with opacity",
+        "category": "background"
+      },
+      "project_1": {
+        "url": "https://images.pexels.com/photos/5480781/pexels-photo-5480781.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Modern data server room",
+        "category": "project_thumbnail"
+      },
+      "project_2": {
+        "url": "https://images.unsplash.com/photo-1604869515882-4d10fa4b0492?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTV8MHwxfHNlYXJjaHwxfHxmaWJlciUyMG9wdGljJTIwY2FibGVzfGVufDB8fHx8MTc3NTY2NjA4OXww&ixlib=rb-4.1.0&q=85",
+        "description": "Fiber optic cables with blue light",
+        "category": "project_thumbnail"
+      },
+      "project_3": {
+        "url": "https://images.unsplash.com/photo-1762163516269-3c143e04175c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwxfHxzZXJ2ZXIlMjByYWNrJTIwZGFya3xlbnwwfHx8fDE3NzU2NjYwODl8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Server rack with blinking lights",
+        "category": "project_thumbnail"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. Setup Tailwind with the specified exact hex codes for deep obsidian and electric blue.",
+    "2. Add Google Fonts 'Outfit', 'Inter', and 'JetBrains Mono'.",
+    "3. Build the public portfolio pages using pure HTML/Tailwind for structural layout (Bento Grids, overlapping sections). Do NOT wrap large sections in Shadcn Cards.",
+    "4. For the Hero section, use the 'hero_bg' image with a heavy black overlay (bg-black/80) or gradient to ensure the text pops. Implement a subtle entrance animation for the headings.",
+    "5. Use the 'Grid Borders' concept for the Skills section to give it a technical, structured matrix feel.",
+    "6. Build the Admin Dashboard using Shadcn UI components. Maintain a 'Control Room' density (tight spacing, pure dark backgrounds, sharp borders).",
+    "7. Include data-testid attributes on EVERYTHING interactive (buttons, links, form inputs, admin CRUD actions).",
+    "8. Populate the initial projects database with the provided 'project_thumbnail' image URLs so the portfolio does not launch empty."
+  ]
+}
