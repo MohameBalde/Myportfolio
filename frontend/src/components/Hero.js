@@ -3,6 +3,7 @@ import { ArrowRight, Download } from 'lucide-react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const PHOTO_URL = "https://raw.githubusercontent.com/MohameBalde/Myportfolio/main/frontend/src/photo.jpeg";
 
 export const Hero = () => {
   const scrollToProjects = () => {
@@ -32,6 +33,7 @@ export const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -44,6 +46,22 @@ export const Hero = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-24 py-32 text-center">
+
+        {/* ✅ Photo de profil circulaire */}
+        <div className="flex justify-center mb-8">
+          <div className="relative">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-[#0055FF] shadow-[0_0_25px_rgba(0,85,255,0.4)]">
+              <img
+                src={PHOTO_URL}
+                alt="Mohamed Baldé"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Point vert "disponible" */}
+            <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-400 rounded-full border-2 border-[#050505]"></div>
+          </div>
+        </div>
+
         <div className="mb-6">
           <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]" data-testid="hero-overline">
             Administrateur Réseaux & Systèmes
