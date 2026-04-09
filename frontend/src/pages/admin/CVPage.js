@@ -9,6 +9,11 @@ import { fr } from 'date-fns/locale';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+function authHeader() {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export default function CVPage() {
   const [cvInfo, setCvInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +26,9 @@ export default function CVPage() {
 
   const fetchCVInfo = async () => {
     try {
-      const { data } = await axios.get(`${API}/cv/current`, { withCredentials: true });
+      const { data } = await axios.get(`${API}/cv/current`, {
+        headers: authHeader()  // ✅ Bearer token
+      });
       setCvInfo(data);
     } catch (error) {
       console.error('Error fetching CV info:', error);
@@ -34,7 +41,7 @@ export default function CVPage() {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (!file.name.toLowerCase().endsWith('.pdf')) {
       toast.error('Seuls les fichiers PDF sont acceptés');
       e.target.value = '';
@@ -55,18 +62,16 @@ export default function CVPage() {
 
     try {
       await axios.post(`${API}/cv/upload`, formData, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          ...authHeader(),                        // ✅ Bearer token
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      
+
       toast.success('CV uploadé avec succès');
-      
-      // Reset file input
       setSelectedFile(null);
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = '';
-      
-      // Refetch CV info
       await fetchCVInfo();
     } catch (error) {
       console.error('Error uploading CV:', error);
@@ -80,7 +85,7 @@ export default function CVPage() {
   const handleDownload = async () => {
     try {
       const response = await axios.get(`${API}/cv/download`, {
-        withCredentials: true,
+        headers: authHeader(),  // ✅ Bearer token
         responseType: 'blob'
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
