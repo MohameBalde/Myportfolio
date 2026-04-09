@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+function authHeader() {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
@@ -30,7 +35,7 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const { data } = await axios.get(`${API}/projects`, { withCredentials: true });
+      const { data } = await axios.get(`${API}/projects`); // public, pas besoin de token
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -45,33 +50,30 @@ export default function ProjectsPage() {
     setSubmitting(true);
 
     try {
+      const params = `title=${encodeURIComponent(formData.title)}&description=${encodeURIComponent(formData.description)}&technologies=${encodeURIComponent(formData.technologies)}&category=${encodeURIComponent(formData.category)}`;
+
       const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('technologies', formData.technologies);
-      formDataToSend.append('category', formData.category);
       if (imageFile) {
         formDataToSend.append('image', imageFile);
       }
 
+      const headers = {
+        ...authHeader(),  // ✅ Bearer token
+        ...(imageFile ? { 'Content-Type': 'multipart/form-data' } : {})
+      };
+
       if (editingProject) {
         await axios.put(
-          `${API}/projects/${editingProject.id}?title=${encodeURIComponent(formData.title)}&description=${encodeURIComponent(formData.description)}&technologies=${encodeURIComponent(formData.technologies)}&category=${encodeURIComponent(formData.category)}`,
+          `${API}/projects/${editingProject.id}?${params}`,
           imageFile ? formDataToSend : {},
-          { 
-            withCredentials: true,
-            headers: imageFile ? { 'Content-Type': 'multipart/form-data' } : {}
-          }
+          { headers }
         );
         toast.success('Projet mis à jour avec succès');
       } else {
         await axios.post(
-          `${API}/projects?title=${encodeURIComponent(formData.title)}&description=${encodeURIComponent(formData.description)}&technologies=${encodeURIComponent(formData.technologies)}&category=${encodeURIComponent(formData.category)}`,
+          `${API}/projects?${params}`,
           imageFile ? formDataToSend : {},
-          { 
-            withCredentials: true,
-            headers: imageFile ? { 'Content-Type': 'multipart/form-data' } : {}
-          }
+          { headers }
         );
         toast.success('Projet créé avec succès');
       }
@@ -88,9 +90,10 @@ export default function ProjectsPage() {
 
   const handleDelete = async (projectId) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) return;
-
     try {
-      await axios.delete(`${API}/projects/${projectId}`, { withCredentials: true });
+      await axios.delete(`${API}/projects/${projectId}`, {
+        headers: authHeader()  // ✅ Bearer token
+      });
       toast.success('Projet supprimé avec succès');
       fetchProjects();
     } catch (error) {
@@ -153,7 +156,6 @@ export default function ProjectsPage() {
                   data-testid="project-title-input"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Description</label>
                 <Textarea
@@ -165,7 +167,6 @@ export default function ProjectsPage() {
                   data-testid="project-description-input"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Technologies (séparées par des virgules)</label>
                 <Input
@@ -177,7 +178,6 @@ export default function ProjectsPage() {
                   data-testid="project-technologies-input"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Catégorie</label>
                 <Select
@@ -195,7 +195,6 @@ export default function ProjectsPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">Image</label>
                 <Input
@@ -206,7 +205,6 @@ export default function ProjectsPage() {
                   data-testid="project-image-input"
                 />
               </div>
-
               <div className="flex gap-3">
                 <Button
                   type="submit"
