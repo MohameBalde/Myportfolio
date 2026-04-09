@@ -89,27 +89,25 @@ def create_access_token(user_id: str, email: str) -> str:
     payload = {
         "sub": user_id,
         "email": email,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24),
         "type": "access"
     }
     return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
 
-def create_refresh_token(user_id: str) -> str:
-    payload = {
-        "sub": user_id,
-        "exp": datetime.now(timezone.utc) + timedelta(days=7),
-        "type": "refresh"
-    }
-    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
-
+# ✅ Lit le token depuis Authorization header (Bearer) OU cookie
 async def get_current_user(request: Request) -> dict:
-    token = request.cookies.get("access_token")
+    token = None
+
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+
     if not token:
-        auth_header = request.headers.get("Authorization", "")
-        if auth_header.startswith("Bearer "):
-            token = auth_header[7:]
+        token = request.cookies.get("access_token")
+
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
         if payload.get("type") != "access":
@@ -135,7 +133,6 @@ class UserResponse(BaseModel):
     email: str
     name: str
     role: str
-
     model_config = ConfigDict(populate_by_name=True)
 
 class ProjectCreate(BaseModel):
@@ -177,7 +174,6 @@ async def startup():
     try:
         init_storage()
         await db.users.create_index("email", unique=True)
-        await db.login_attempts.create_index("identifier")
         await seed_admin()
         await seed_initial_projects()
         logger.info("Startup complete")
@@ -242,7 +238,7 @@ async def seed_initial_projects():
 
 # ==================== Auth Endpoints ====================
 @api_router.post("/auth/login")
-async def login(credentials: LoginRequest, response: Response):
+async def login(credentials: LoginRequest):
     email = credentials.email.lower()
     user = await db.users.find_one({"email": email})
 
@@ -251,29 +247,11 @@ async def login(credentials: LoginRequest, response: Response):
 
     user_id = str(user["_id"])
     access_token = create_access_token(user_id, email)
-    refresh_token = create_refresh_token(user_id)
 
-    # ✅ FIX: secure=True + samesite="none" pour cross-domain (Vercel → Render)
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=True,        # ✅ HTTPS obligatoire
-        samesite="none",    # ✅ cross-domain autorisé
-        max_age=900,
-        path="/"
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=True,        # ✅ HTTPS obligatoire
-        samesite="none",    # ✅ cross-domain autorisé
-        max_age=604800,
-        path="/"
-    )
-
+    # ✅ Token retourné dans le JSON — stocké dans localStorage côté frontend
     return {
+        "access_token": access_token,
+        "token_type": "bearer",
         "_id": user_id,
         "email": user["email"],
         "name": user["name"],
@@ -281,9 +259,8 @@ async def login(credentials: LoginRequest, response: Response):
     }
 
 @api_router.post("/auth/logout")
-async def logout(response: Response):
-    response.delete_cookie(key="access_token", path="/", secure=True, samesite="none")
-    response.delete_cookie(key="refresh_token", path="/", secure=True, samesite="none")
+async def logout():
+    # ✅ Logout géré côté frontend (suppression localStorage)
     return {"message": "Logged out successfully"}
 
 @api_router.get("/auth/me")
@@ -325,7 +302,7 @@ async def create_project(request: Request, title: str = Query(...), description:
         "created_at": datetime.now(timezone.utc).isoformat()
     }
 
-    result = await db.projects.insert_one(project)
+    await db.projects.insert_one(project)
     inserted_project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     return inserted_project
 
@@ -438,7 +415,6 @@ async def download_cv():
         raise HTTPException(status_code=404, detail="CV not found")
 
     data, content_type = get_object(cv["storage_path"])
-
     return Response(
         content=data,
         media_type=content_type,
@@ -466,7 +442,6 @@ async def download_file(path: str):
 app.include_router(api_router)
 
 # ==================== CORS ====================
-# ✅ FIX: Ajout de l'URL Vercel + allow_credentials=True obligatoire avec samesite=none
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 app.add_middleware(
@@ -475,7 +450,7 @@ app.add_middleware(
         FRONTEND_URL,
         "http://localhost:3000",
     ],
-    allow_credentials=True,   # ✅ obligatoire pour les cookies cross-domain
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
