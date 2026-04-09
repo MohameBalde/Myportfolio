@@ -245,20 +245,21 @@ async def seed_initial_projects():
 async def login(credentials: LoginRequest, response: Response):
     email = credentials.email.lower()
     user = await db.users.find_one({"email": email})
-    
+
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     user_id = str(user["_id"])
     access_token = create_access_token(user_id, email)
     refresh_token = create_refresh_token(user_id)
-    
+
+    # ✅ FIX: secure=True + samesite="none" pour cross-domain (Vercel → Render)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,        # ✅ HTTPS obligatoire
+        samesite="none",    # ✅ cross-domain autorisé
         max_age=900,
         path="/"
     )
@@ -266,12 +267,12 @@ async def login(credentials: LoginRequest, response: Response):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,        # ✅ HTTPS obligatoire
+        samesite="none",    # ✅ cross-domain autorisé
         max_age=604800,
         path="/"
     )
-    
+
     return {
         "_id": user_id,
         "email": user["email"],
@@ -281,8 +282,8 @@ async def login(credentials: LoginRequest, response: Response):
 
 @api_router.post("/auth/logout")
 async def logout(response: Response):
-    response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/")
+    response.delete_cookie(key="access_token", path="/", secure=True, samesite="none")
+    response.delete_cookie(key="refresh_token", path="/", secure=True, samesite="none")
     return {"message": "Logged out successfully"}
 
 @api_router.get("/auth/me")
@@ -297,23 +298,23 @@ async def get_projects():
     return projects
 
 @api_router.post("/projects")
-async def create_project(request: Request, title: str = Query(...), description: str = Query(...), 
+async def create_project(request: Request, title: str = Query(...), description: str = Query(...),
                         technologies: str = Query(...), category: str = Query(...),
                         image: UploadFile = File(None)):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     project_id = str(uuid.uuid4())
     image_url = None
-    
+
     if image:
         ext = image.filename.split(".")[-1] if "." in image.filename else "jpg"
         path = f"{APP_NAME}/projects/{project_id}.{ext}"
         data = await image.read()
         result = put_object(path, data, image.content_type or "image/jpeg")
         image_url = f"/api/files/{result['path']}"
-    
+
     project = {
         "id": project_id,
         "title": title,
@@ -323,38 +324,37 @@ async def create_project(request: Request, title: str = Query(...), description:
         "image_url": image_url,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
-    
+
     result = await db.projects.insert_one(project)
-    # Retrieve the inserted project without MongoDB's _id field
     inserted_project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     return inserted_project
 
 @api_router.put("/projects/{project_id}")
-async def update_project(request: Request, project_id: str, title: str = Query(...), 
-                        description: str = Query(...), technologies: str = Query(...), 
+async def update_project(request: Request, project_id: str, title: str = Query(...),
+                        description: str = Query(...), technologies: str = Query(...),
                         category: str = Query(...), image: UploadFile = File(None)):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     project = await db.projects.find_one({"id": project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     update_data = {
         "title": title,
         "description": description,
         "technologies": technologies,
         "category": category
     }
-    
+
     if image:
         ext = image.filename.split(".")[-1] if "." in image.filename else "jpg"
         path = f"{APP_NAME}/projects/{project_id}.{ext}"
         data = await image.read()
         result = put_object(path, data, image.content_type or "image/jpeg")
         update_data["image_url"] = f"/api/files/{result['path']}"
-    
+
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
     updated = await db.projects.find_one({"id": project_id}, {"_id": 0})
     return updated
@@ -364,11 +364,11 @@ async def delete_project(request: Request, project_id: str):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     result = await db.projects.delete_one({"id": project_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     return {"message": "Project deleted"}
 
 # ==================== Messages Endpoints ====================
@@ -389,7 +389,7 @@ async def get_messages(request: Request):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     messages = await db.messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return messages
 
@@ -398,11 +398,11 @@ async def delete_message(request: Request, message_id: str):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     result = await db.messages.delete_one({"id": message_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Message not found")
-    
+
     return {"message": "Message deleted"}
 
 # ==================== CV Endpoints ====================
@@ -411,15 +411,15 @@ async def upload_cv(request: Request, file: UploadFile = File(...)):
     user = await get_current_user(request)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files allowed")
-    
+
     cv_id = str(uuid.uuid4())
     path = f"{APP_NAME}/cv/current.pdf"
     data = await file.read()
     result = put_object(path, data, "application/pdf")
-    
+
     await db.cv.delete_many({})
     cv_doc = {
         "id": cv_id,
@@ -428,7 +428,7 @@ async def upload_cv(request: Request, file: UploadFile = File(...)):
         "uploaded_at": datetime.now(timezone.utc).isoformat()
     }
     await db.cv.insert_one(cv_doc)
-    
+
     return {"message": "CV uploaded successfully", "filename": file.filename}
 
 @api_router.get("/cv/download")
@@ -436,9 +436,9 @@ async def download_cv():
     cv = await db.cv.find_one({}, {"_id": 0})
     if not cv:
         raise HTTPException(status_code=404, detail="CV not found")
-    
+
     data, content_type = get_object(cv["storage_path"])
-    
+
     return Response(
         content=data,
         media_type=content_type,
@@ -465,11 +465,17 @@ async def download_file(path: str):
 # Include router
 app.include_router(api_router)
 
-# CORS
+# ==================== CORS ====================
+# ✅ FIX: Ajout de l'URL Vercel + allow_credentials=True obligatoire avec samesite=none
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.environ.get("FRONTEND_URL", "http://localhost:3000")],
-    allow_credentials=True,
+    allow_origins=[
+        FRONTEND_URL,
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,   # ✅ obligatoire pour les cookies cross-domain
     allow_methods=["*"],
     allow_headers=["*"],
 )
