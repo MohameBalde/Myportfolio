@@ -8,6 +8,11 @@ import { fr } from 'date-fns/locale';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+function authHeader() {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +23,9 @@ export default function MessagesPage() {
 
   const fetchMessages = async () => {
     try {
-      const { data } = await axios.get(`${API}/messages`, { withCredentials: true });
+      const { data } = await axios.get(`${API}/messages`, {
+        headers: authHeader()   // ✅ Bearer token au lieu de withCredentials
+      });
       setMessages(data);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -30,9 +37,10 @@ export default function MessagesPage() {
 
   const handleDelete = async (messageId) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) return;
-
     try {
-      await axios.delete(`${API}/messages/${messageId}`, { withCredentials: true });
+      await axios.delete(`${API}/messages/${messageId}`, {
+        headers: authHeader()   // ✅ Bearer token
+      });
       toast.success('Message supprimé avec succès');
       fetchMessages();
     } catch (error) {
@@ -48,7 +56,6 @@ export default function MessagesPage() {
   return (
     <div>
       <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8">Messages reçus</h1>
-
       {messages.length === 0 ? (
         <div className="text-center py-12 text-[#A1A1AA]">
           Aucun message pour le moment.
