@@ -22,6 +22,12 @@ function formatApiErrorDetail(detail) {
   return String(detail);
 }
 
+// ✅ Helper : ajouter le token aux requêtes axios
+function authHeader() {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,9 +38,20 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const { data } = await axios.get(`${API}/auth/me`, { withCredentials: true });
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setUser(false);
+        setLoading(false);
+        return;
+      }
+      // ✅ Envoyer le token dans le header Authorization
+      const { data } = await axios.get(`${API}/auth/me`, {
+        headers: authHeader()
+      });
       setUser(data);
     } catch (error) {
+      // Token invalide ou expiré → on nettoie
+      localStorage.removeItem("access_token");
       setUser(false);
     } finally {
       setLoading(false);
@@ -43,12 +60,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const { data } = await axios.post(
-        `${API}/auth/login`,
-        { email, password },
-        { withCredentials: true }
-      );
-      setUser(data);
+      // ✅ Pas de withCredentials — on utilise localStorage
+      const { data } = await axios.post(`${API}/auth/login`, { email, password });
+
+      // ✅ Stocker le token dans localStorage
+      localStorage.setItem("access_token", data.access_token);
+
+      // ✅ Stocker les infos user
+      setUser({
+        _id: data._id,
+        email: data.email,
+        name: data.name,
+        role: data.role
+      });
+
       return { success: true };
     } catch (error) {
       const message = formatApiErrorDetail(error.response?.data?.detail) || error.message;
@@ -58,15 +83,18 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
-      setUser(false);
+      await axios.post(`${API}/auth/logout`, {}, { headers: authHeader() });
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      // ✅ Toujours nettoyer le localStorage
+      localStorage.removeItem("access_token");
+      setUser(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth, authHeader }}>
       {children}
     </AuthContext.Provider>
   );
