@@ -2,11 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FolderKanban, MessageSquare, FileText, TrendingUp } from 'lucide-react';
 
-const stats = [
-  { icon: FolderKanban, label: 'Projets', value: '0', color: 'text-blue-400', link: '/admin/projects' },
-  { icon: MessageSquare, label: 'Messages', value: '0', color: 'text-green-400', link: '/admin/messages' },
-  { icon: FileText, label: 'CV', value: 'Non uploadé', color: 'text-purple-400', link: '/admin/cv' }
-];
+function authHeader() {
+  const token = localStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function DashboardPage() {
   const [data, setData] = React.useState({ projects: 0, messages: 0, hasCv: false });
@@ -14,33 +13,30 @@ export default function DashboardPage() {
   React.useEffect(() => {
     const fetchStats = async () => {
       try {
+        const headers = authHeader();
         const [projectsRes, messagesRes, cvRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/projects`, { credentials: 'include' }),
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages`, { credentials: 'include' }),
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cv/current`, { credentials: 'include' })
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/projects`, { headers }),
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages`, { headers }),
+          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cv/current`, { headers })
         ]);
-
         const projects = await projectsRes.json();
         const messages = await messagesRes.json();
         const cv = await cvRes.json();
-
         setData({
-          projects: projects.length || 0,
-          messages: messages.length || 0,
+          projects: Array.isArray(projects) ? projects.length : 0,
+          messages: Array.isArray(messages) ? messages.length : 0,
           hasCv: cv.has_cv || false
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
       }
     };
-
     fetchStats();
   }, []);
 
   return (
     <div>
       <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8">Tableau de bord</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
           to="/admin/projects"
