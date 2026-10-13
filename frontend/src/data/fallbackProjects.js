@@ -1,44 +1,35 @@
 // Projets affichés quand l'API Render ne répond pas à temps (serveur endormi ou en panne).
-// À garder synchronisé avec les projets saisis dans l'espace admin.
+// Copie des projets enregistrés dans la base (backend/server.py, seed_initial_projects) :
+// à garder synchronisé avec les projets saisis dans l'espace admin.
 export const fallbackProjects = [
   {
-    id: 'fallback-cisco',
-    title: 'Infrastructure réseau multi-VLAN Cisco',
+    id: 'fallback-vlan',
+    title: 'Configuration Réseau VLAN',
     description:
-      "Conception et configuration d'un réseau d'entreprise segmenté en VLAN avec routage inter-VLAN, " +
-      'routage dynamique OSPF, DHCP et listes de contrôle d\'accès, simulé sous Cisco Packet Tracer.',
-    technologies: 'Cisco IOS, VLAN, OSPF, DHCP, ACL, Packet Tracer',
+      "Mise en place d'une architecture réseau segmentée avec VLANs pour optimiser la sécurité et les performances.",
+    technologies: 'Cisco Packet Tracer, VLAN, Routing',
     category: 'Network',
-    image_url: null
+    image_url:
+      'https://images.pexels.com/photos/5480781/pexels-photo-5480781.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'
+  },
+  {
+    id: 'fallback-windows-server',
+    title: 'Déploiement Windows Server',
+    description:
+      'Installation et configuration de Windows Server 2019 avec Active Directory, DNS et DHCP.',
+    technologies: 'Windows Server, Active Directory, GPO',
+    category: 'System',
+    image_url:
+      'https://images.unsplash.com/photo-1762163516269-3c143e04175c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHwxfHxzZXJ2ZXIlMjByYWNrJTIwZGFya3xlbnwwfHx8fDE3NzU2NjYwODl8MA&ixlib=rb-4.1.0&q=85'
   },
   {
     id: 'fallback-voip',
-    title: 'Téléphonie IP avec Asterisk',
+    title: 'Serveur VoIP Issabel',
     description:
-      "Mise en place d'un serveur VoIP Asterisk : création des comptes SIP, plan de numérotation, " +
-      'messagerie vocale et appels entre softphones sur le réseau local.',
-    technologies: 'Asterisk, SIP, VoIP, Linux, Softphone',
+      "Configuration d'un serveur de téléphonie IP avec Issabel pour gérer les appels internes.",
+    technologies: 'Issabel, Asterisk, VoIP, SIP',
     category: 'Telecom',
-    image_url: null
-  },
-  {
-    id: 'fallback-windows',
-    title: 'Domaine Windows Server & Active Directory',
-    description:
-      "Déploiement d'un contrôleur de domaine Windows Server : Active Directory, DNS, DHCP, " +
-      'gestion des utilisateurs et des groupes, et stratégies de groupe (GPO).',
-    technologies: 'Windows Server, Active Directory, DNS, DHCP, GPO',
-    category: 'System',
-    image_url: null
-  },
-  {
-    id: 'fallback-wifi',
-    title: 'Réseau WiFi sécurisé',
-    description:
-      "Installation et sécurisation d'un réseau sans fil : plan d'adressage, SSID séparés pour les " +
-      'invités et le personnel, chiffrement WPA2/WPA3 et contrôle de la couverture.',
-    technologies: 'WiFi, WPA2/WPA3, Point d\'accès, VLAN',
-    category: 'Network',
-    image_url: null
+    image_url:
+      'https://images.unsplash.com/photo-1604869515882-4d10fa4b0492?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTV8MHwxfHNlYXJjaHwxfHxmaWJlciUyMG9wdGljJTIwY2FibGVzfGVufDB8fHx8MTc3NTY2NjA4OXww&ixlib=rb-4.1.0&q=85'
   }
 ];

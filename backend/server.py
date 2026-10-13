@@ -182,7 +182,10 @@ async def startup():
 
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "balde8307@gmail.com")
-    admin_password = os.environ.get("ADMIN_PASSWORD", "Admin@2025")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+    if not admin_password:
+        logger.warning("ADMIN_PASSWORD not set, admin user not seeded")
+        return
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:
         hashed = hash_password(admin_password)
@@ -448,6 +451,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         FRONTEND_URL,
+        "https://myportfolio-hazel-pi.vercel.app",
         "http://localhost:3000",
     ],
     allow_credentials=True,

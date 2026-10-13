@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API, BACKEND_URL, COLD_START_TIMEOUT } from '@/lib/api';
+import { API, COLD_START_TIMEOUT, resolveImageUrl } from '@/lib/api';
 import { fallbackProjects } from '@/data/fallbackProjects';
 
 // Au-delà de ce délai on affiche les projets de secours ; l'appel continue
@@ -101,7 +101,7 @@ export const Projects = () => {
               {project.image_url && (
                 <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
                   <img
-                    src={`${BACKEND_URL}${project.image_url}`}
+                    src={resolveImageUrl(project.image_url)}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
