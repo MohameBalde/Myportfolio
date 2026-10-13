@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ExternalLink } from 'lucide-react';
+import { API, BACKEND_URL, COLD_START_TIMEOUT } from '@/lib/api';
+import { fallbackProjects } from '@/data/fallbackProjects';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+// Au-delà de ce délai on affiche les projets de secours ; l'appel continue
+// et remplace ces projets dès que le serveur répond.
+const FALLBACK_DELAY = 4000;
 
 const categoryColors = {
   Network: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -17,19 +20,34 @@ export const Projects = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
-    try {
-      const { data } = await axios.get(`${API}/projects`);
-      setProjects(data);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    } finally {
+    const controller = new AbortController();
+    const abortTimer = setTimeout(() => controller.abort(), COLD_START_TIMEOUT);
+    const fallbackTimer = setTimeout(() => {
+      setProjects((current) => (current.length ? current : fallbackProjects));
       setLoading(false);
-    }
-  };
+    }, FALLBACK_DELAY);
+
+    axios
+      .get(`${API}/projects`, { signal: controller.signal })
+      .then(({ data }) => {
+        setProjects(Array.isArray(data) && data.length ? data : fallbackProjects);
+      })
+      .catch((error) => {
+        if (!axios.isCancel(error)) console.error('Error fetching projects:', error);
+        setProjects(fallbackProjects);
+      })
+      .finally(() => {
+        clearTimeout(abortTimer);
+        clearTimeout(fallbackTimer);
+        setLoading(false);
+      });
+
+    return () => {
+      clearTimeout(abortTimer);
+      clearTimeout(fallbackTimer);
+      controller.abort();
+    };
+  }, []);
 
   const categories = ['All', ...new Set(projects.map(p => p.category))];
   const filteredProjects = selectedCategory === 'All'
@@ -83,7 +101,7 @@ export const Projects = () => {
               {project.image_url && (
                 <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
                   <img
-                    src={`${process.env.REACT_APP_BACKEND_URL}${project.image_url}`}
+                    src={`${BACKEND_URL}${project.image_url}`}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -102,7 +120,7 @@ export const Projects = () => {
                 <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                 <p className="text-[#A1A1AA] text-sm mb-4 line-clamp-3">{project.description}</p>
                 <div className="flex flex-wrap gap-2">
-                  {project.technologies.split(',').map((tech, techIdx) => (
+                  {(project.technologies || '').split(',').map((tech, techIdx) => (
                     <span
                       key={techIdx}
                       className="px-2 py-1 bg-[#1A1A1D] text-[#71717A] text-xs rounded"

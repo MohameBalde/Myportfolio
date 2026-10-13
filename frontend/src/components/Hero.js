@@ -1,8 +1,13 @@
 import React from 'react';
 import { ArrowRight, Download } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'sonner';
+import { API, COLD_START_TIMEOUT } from '@/lib/api';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+// Copie statique du CV servie par Vercel (frontend/public/), toujours disponible.
+// Si elle est absente, on se rabat sur le CV stocké via l'admin (API Render).
+const STATIC_CV_URL = '/CV_Mohamed_Balde.pdf';
+const CV_FILENAME = 'CV_Mohamed_Balde.pdf';
 const PHOTO_URL = "https://raw.githubusercontent.com/MohameBalde/Myportfolio/main/frontend/src/photo.jpeg";
 
 export const Hero = () => {
@@ -13,21 +18,37 @@ export const Hero = () => {
     }
   };
 
-  const handleDownloadCV = async () => {
+  const fetchCV = async () => {
     try {
-      const response = await axios.get(`${API}/cv/download`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await axios.get(STATIC_CV_URL, { responseType: 'blob' });
+      // Sans fichier statique, Vercel renvoie index.html au lieu d'un PDF.
+      if (response.data.type === 'application/pdf') return response.data;
+    } catch (error) {
+      // Pas de copie statique : on tente l'API.
+    }
+    const response = await axios.get(`${API}/cv/download`, {
+      responseType: 'blob',
+      timeout: COLD_START_TIMEOUT
+    });
+    return response.data;
+  };
+
+  const handleDownloadCV = async () => {
+    const toastId = toast.loading('Préparation du CV...');
+    try {
+      const blob = await fetchCV();
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'CV_Mohamed_Balde.pdf');
+      link.setAttribute('download', CV_FILENAME);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.dismiss(toastId);
     } catch (error) {
       console.error('Download error:', error);
-      alert('CV non disponible pour le moment');
+      toast.error('CV indisponible pour le moment. Demandez-le à balde8307@gmail.com', { id: toastId });
     }
   };
 

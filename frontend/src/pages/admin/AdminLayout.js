@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LayoutDashboard, FolderKanban, MessageSquare, FileText, LogOut, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BackendStatusBanner } from '@/components/BackendStatusBanner';
 
 const navItems = [
   { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -69,6 +70,7 @@ export default function AdminLayout() {
       </aside>
 
       <main className="flex-1 overflow-auto">
+        <BackendStatusBanner />
         <div className="p-8">
           <Outlet />
         </div>

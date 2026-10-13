@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Mail, Phone, Send, Linkedin } from 'lucide-react';
+import { Mail, Phone, Send, Linkedin, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+import { API, COLD_START_TIMEOUT } from '@/lib/api';
+
+const CONTACT_EMAIL = 'balde8307@gmail.com';
 
 export const Contact = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ export const Contact = () => {
     message: ''
   });
   const [loading, setLoading] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,18 +27,27 @@ export const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFailed(false);
+    const slowTimer = setTimeout(() => setSlow(true), 5000);
 
     try {
-      await axios.post(`${API}/messages`, formData);
+      await axios.post(`${API}/messages`, formData, { timeout: COLD_START_TIMEOUT });
       toast.success('Message envoyé avec succès !');
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
-      toast.error("Erreur lors de l'envoi du message");
+      setFailed(true);
+      toast.error("Le message n'a pas pu être envoyé. Écrivez-moi directement par email.");
       console.error('Contact error:', error);
     } finally {
+      clearTimeout(slowTimer);
+      setSlow(false);
       setLoading(false);
     }
   };
+
+  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+    `Contact portfolio - ${formData.name}`
+  )}&body=${encodeURIComponent(`${formData.message}\n\n${formData.name}\n${formData.email}`)}`;
 
   return (
     <section id="contact" className="py-24 md:py-32 bg-[#050505]">
@@ -147,9 +160,26 @@ export const Contact = () => {
                 className="w-full bg-[#0055FF] hover:bg-[#3B82F6] hover:shadow-[0_0_15px_rgba(0,85,255,0.5)] transition-all"
                 data-testid="contact-submit-button"
               >
-                {loading ? 'Envoi...' : 'Envoyer le message'}
+                {loading ? (slow ? 'Réveil du serveur, patientez...' : 'Envoi...') : 'Envoyer le message'}
                 <Send className="w-4 h-4 ml-2" />
               </Button>
+
+              {failed && (
+                <div
+                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-sm text-[#A1A1AA] p-4 rounded-md"
+                  role="alert"
+                  data-testid="contact-error"
+                >
+                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                  <p>
+                    L'envoi a échoué. Vous pouvez m'écrire directement à{' '}
+                    <a href={mailtoHref} className="text-white underline hover:text-[#0055FF]">
+                      {CONTACT_EMAIL}
+                    </a>{' '}
+                    (votre message sera pré-rempli).
+                  </p>
+                </div>
+              )}
             </form>
           </div>
         </div>
