@@ -43,7 +43,8 @@ export const About = () => {
             <p className="text-base text-[#A1A1AA] leading-relaxed">
               Je maîtrise les technologies de routage et de commutation, l'administration Windows Server,
               ainsi que les systèmes de téléphonie VoIP. Mon objectif est de mettre ces compétences au service
-              d'entreprises innovantes dans le cadre d'un stage enrichissant.
+              d'une entreprise en tant qu'administrateur réseaux et systèmes, tout en développant mon activité
+              d'entrepreneur dans les services digitaux, l'installation de logiciels et le dépannage informatique.
             </p>
           </div>
 
@@ -73,8 +74,11 @@ export const About = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">Objectif Professionnel</h3>
                   <p className="text-[#A1A1AA] text-sm">
-                    Recherche active d'un stage en administration réseaux et systèmes pour approfondir mes
-                    compétences techniques et contribuer à des projets concrets.
+                    Recherche active d'un emploi en administration réseaux et systèmes pour contribuer à des
+                    projets concrets et continuer à progresser.
+                  </p>
+                  <p className="text-[#71717A] text-sm mt-2">
+                    Entrepreneur : services digitaux, installation de logiciels et dépannage informatique.
                   </p>
                 </div>
               </div>

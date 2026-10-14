@@ -67,8 +67,9 @@ export const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
             <p className="text-base text-[#A1A1AA] leading-relaxed mb-8">
-              Je suis actuellement à la recherche d'opportunités de stage en administration réseaux et systèmes.
-              N'hésitez pas à me contacter pour discuter de vos besoins ou de toute collaboration potentielle.
+              Je suis à la recherche d'un emploi en administration réseaux et systèmes. Je propose aussi mes
+              services d'entrepreneur : services digitaux, installation de logiciels et dépannage informatique.
+              N'hésitez pas à me contacter pour une offre d'emploi, un besoin technique ou toute collaboration.
             </p>
 
             <div className="space-y-4">

@@ -108,7 +108,8 @@ export const Hero = () => {
         </p>
 
         <p className="text-base text-[#A1A1AA] max-w-2xl mx-auto mb-12">
-          Étudiant passionné en réseaux et télécommunications, à la recherche d'un stage en administration réseaux et systèmes.
+          Étudiant passionné en réseaux et télécommunications, à la recherche d'un emploi en administration réseaux et systèmes.
+          Entrepreneur en services digitaux, installation de logiciels et dépannage informatique.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
