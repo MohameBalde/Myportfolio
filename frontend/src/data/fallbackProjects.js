@@ -11,7 +11,7 @@ export const fallbackProjects = [
       '(boîtes aux lettres, flux de messagerie, intégration AD).',
     technologies: 'Windows Server 2025, Active Directory, DNS, DHCP, GPO, iSCSI, SharePoint, Exchange',
     category: 'System',
-    image_url: null
+    image_url: '/projects/windows-server-2025.webp'
   },
   {
     id: 'fallback-zimbra',
@@ -23,7 +23,7 @@ export const fallbackProjects = [
       "d'envoi/réception.",
     technologies: 'Zimbra Collaboration Suite, CentOS, Postfix, SMTP, IMAP, POP3, DNS',
     category: 'System',
-    image_url: null
+    image_url: '/projects/zimbra-centos.webp'
   },
   {
     id: 'fallback-lemp-lamp',
@@ -34,7 +34,7 @@ export const fallbackProjects = [
       "AlmaLinux avec reverse proxy, HTTPS via Let's Encrypt et pare-feu (UFW, firewalld).",
     technologies: "Debian, AlmaLinux, Apache, Nginx, MySQL, MariaDB, PHP-FPM, Let's Encrypt",
     category: 'Web',
-    image_url: null
+    image_url: '/projects/lemp-lamp.webp'
   },
   {
     id: 'fallback-vmware',
@@ -46,7 +46,7 @@ export const fallbackProjects = [
       "et simulation de PRA : restauration intégrale d'un serveur MariaDB sans perte de données.",
     technologies: 'VMware ESXi, vCenter, Veeam Backup & Replication, TrueNAS, Active Directory',
     category: 'System',
-    image_url: null
+    image_url: '/projects/vmware-pra.webp'
   },
   {
     id: 'fallback-issabel',
@@ -57,6 +57,6 @@ export const fallbackProjects = [
       "d'attente et messagerie vocale, tests avec softphones et contrôle de la qualité (QoS).",
     technologies: 'Issabel, Asterisk, SIP, VoIP, Zoiper, MicroSIP',
     category: 'Telecom',
-    image_url: null
+    image_url: '/projects/issabel-voip.webp'
   }
 ];
