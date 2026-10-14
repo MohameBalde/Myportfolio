@@ -129,8 +129,13 @@ def seed_admin(db):
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info(f"Admin user created: {admin_email}")
-    elif not verify_password(admin_password, existing["password_hash"]):
-        db.users.update_one({"email": admin_email}, {"$set": {"password_hash": hash_password(admin_password)}})
+    elif not existing.get("password_hash") or not verify_password(admin_password, existing["password_hash"]):
+        # Compte créé ailleurs (ex. à la main dans Atlas) ou mot de passe changé dans Vercel.
+        db.users.update_one({"email": admin_email}, {"$set": {
+            "password_hash": hash_password(admin_password),
+            "name": existing.get("name") or "Mohamed Baldé",
+            "role": "admin",
+        }})
         logger.info(f"Admin password updated: {admin_email}")
 
 
@@ -244,7 +249,7 @@ def health():
 def login(credentials: LoginRequest):
     email = credentials.email.lower()
     user = get_db().users.find_one({"email": email})
-    if not user or not verify_password(credentials.password, user["password_hash"]):
+    if not user or not user.get("password_hash") or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user_id = str(user["_id"])
@@ -253,8 +258,8 @@ def login(credentials: LoginRequest):
         "token_type": "bearer",
         "_id": user_id,
         "email": user["email"],
-        "name": user["name"],
-        "role": user["role"],
+        "name": user.get("name", ""),
+        "role": user.get("role", ""),
     }
 
 
