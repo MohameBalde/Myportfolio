@@ -395,7 +395,9 @@ def notify_new_message(message: dict):
     req = urllib.request.Request(
         "https://api.resend.com/emails",
         data=json.dumps(payload).encode(),
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        # Le pare-feu de Resend refuse la signature par défaut de urllib (403) : on s'identifie.
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
+                 "User-Agent": "mohamed-balde-portfolio/1.0"},
         method="POST",
     )
     try:
