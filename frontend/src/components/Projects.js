@@ -59,7 +59,7 @@ export const Projects = () => {
 
   if (loading) {
     return (
-      <section id="projects" className="py-24 md:py-32 bg-[#0F0F11]">
+      <section id="projects" className="py-24 md:py-32 bg-[#050505]">
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 text-center">
           <p className="text-[#A1A1AA]">Chargement des projets...</p>
         </div>
@@ -68,10 +68,10 @@ export const Projects = () => {
   }
 
   return (
-    <section id="projects" className="py-24 md:py-32 bg-[#0F0F11]">
+    <section id="projects" className="py-24 md:py-32 bg-[#050505]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
         <div className="mb-12">
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">03. Réalisations</span>
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">04. Réalisations</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mt-4">
             Mes Projets
           </h2>
@@ -98,7 +98,7 @@ export const Projects = () => {
           {filteredProjects.map((project, idx) => (
             <div
               key={project.id}
-              className="bg-[#050505] border border-white/10 rounded-md overflow-hidden hover:border-[#0055FF] transition-all duration-300 hover:shadow-lg group"
+              className="bg-[#0F0F11] border border-white/10 rounded-md overflow-hidden hover:border-[#0055FF] transition-all duration-300 hover:shadow-lg group"
               data-testid={`project-card-${idx}`}
             >
               <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
@@ -153,7 +153,7 @@ export const Projects = () => {
 const ProjectPlaceholder = ({ category }) => {
   const Icon = categoryIcons[category] || Server;
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0055FF]/20 via-[#0F0F11] to-[#050505] group-hover:from-[#0055FF]/30 transition-colors duration-300">
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0055FF]/20 via-[#050505] to-[#0F0F11] group-hover:from-[#0055FF]/30 transition-colors duration-300">
       <Icon className="w-14 h-14 text-[#0055FF]/70" strokeWidth={1.25} />
     </div>
   );

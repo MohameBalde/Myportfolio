@@ -40,6 +40,13 @@ export const Navbar = () => {
               À propos
             </button>
             <button
+              onClick={() => scrollToSection('experience')}
+              className="text-[#A1A1AA] hover:text-white transition-colors"
+              data-testid="nav-experience"
+            >
+              Parcours
+            </button>
+            <button
               onClick={() => scrollToSection('skills')}
               className="text-[#A1A1AA] hover:text-white transition-colors"
               data-testid="nav-skills"

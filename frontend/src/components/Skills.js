@@ -31,10 +31,10 @@ const skillsData = [
 
 export const Skills = () => {
   return (
-    <section id="skills" className="py-24 md:py-32 bg-[#050505]">
+    <section id="skills" className="py-24 md:py-32 bg-[#0F0F11]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
         <div className="mb-12">
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">02. Compétences</span>
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">03. Compétences</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mt-4">
             Expertise Technique
           </h2>
@@ -46,7 +46,7 @@ export const Skills = () => {
             return (
               <div
                 key={idx}
-                className="bg-[#0F0F11] p-8 border-r border-b border-white/10 hover:bg-[#1A1A1D] transition-colors group"
+                className="bg-[#050505] p-8 border-r border-b border-white/10 hover:bg-[#1A1A1D] transition-colors group"
                 data-testid={`skill-category-${idx}`}
               >
                 <div className="flex items-center gap-3 mb-6">

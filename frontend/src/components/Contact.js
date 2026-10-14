@@ -50,10 +50,10 @@ export const Contact = () => {
   )}&body=${encodeURIComponent(`${formData.message}\n\n${formData.name}\n${formData.email}`)}`;
 
   return (
-    <section id="contact" className="py-24 md:py-32 bg-[#050505]">
+    <section id="contact" className="py-24 md:py-32 bg-[#0F0F11]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24">
         <div className="mb-12">
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">04. Contact</span>
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#0055FF]">05. Contact</span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white mt-4">
             Discutons de votre projet
           </h2>
@@ -72,7 +72,7 @@ export const Contact = () => {
                 className="flex items-center gap-3 text-[#A1A1AA] hover:text-[#0055FF] transition-colors group"
                 data-testid="contact-email-link"
               >
-                <div className="bg-[#0F0F11] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
+                <div className="bg-[#050505] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
                 <span>balde8307@gmail.com</span>
@@ -83,7 +83,7 @@ export const Contact = () => {
                 className="flex items-center gap-3 text-[#A1A1AA] hover:text-[#0055FF] transition-colors group"
                 data-testid="contact-phone-link"
               >
-                <div className="bg-[#0F0F11] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
+                <div className="bg-[#050505] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
                   <Phone className="w-5 h-5" />
                 </div>
                 <span>+224 626 15 89 40</span>
@@ -96,7 +96,7 @@ export const Contact = () => {
                 className="flex items-center gap-3 text-[#A1A1AA] hover:text-[#0055FF] transition-colors group"
                 data-testid="contact-linkedin-link"
               >
-                <div className="bg-[#0F0F11] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
+                <div className="bg-[#050505] p-3 rounded-md group-hover:bg-[#0055FF]/10 transition-colors">
                   <Linkedin className="w-5 h-5" />
                 </div>
                 <span>LinkedIn</span>
@@ -104,7 +104,7 @@ export const Contact = () => {
             </div>
           </div>
 
-          <div className="bg-[#0F0F11] border border-white/10 p-8 rounded-md">
+          <div className="bg-[#050505] border border-white/10 p-8 rounded-md">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
@@ -117,7 +117,7 @@ export const Contact = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="bg-[#050505] border-white/10 text-white"
+                  className="bg-[#0F0F11] border-white/10 text-white"
                   data-testid="contact-name-input"
                 />
               </div>
@@ -133,7 +133,7 @@ export const Contact = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="bg-[#050505] border-white/10 text-white"
+                  className="bg-[#0F0F11] border-white/10 text-white"
                   data-testid="contact-email-input"
                 />
               </div>
@@ -149,7 +149,7 @@ export const Contact = () => {
                   onChange={handleChange}
                   required
                   rows={5}
-                  className="bg-[#050505] border-white/10 text-white"
+                  className="bg-[#0F0F11] border-white/10 text-white"
                   data-testid="contact-message-input"
                 />
               </div>
