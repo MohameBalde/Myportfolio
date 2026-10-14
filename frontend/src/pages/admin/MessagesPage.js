@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API } from '@/lib/api';
 import { Trash2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function authHeader() {
   const token = localStorage.getItem("access_token");

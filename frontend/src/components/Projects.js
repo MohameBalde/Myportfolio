@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API, COLD_START_TIMEOUT, resolveImageUrl } from '@/lib/api';
+import { Network, Server, Phone, Globe } from 'lucide-react';
+import { API, REQUEST_TIMEOUT, resolveImageUrl } from '@/lib/api';
 import { fallbackProjects } from '@/data/fallbackProjects';
 
 // Au-delà de ce délai on affiche les projets de secours ; l'appel continue
 // et remplace ces projets dès que le serveur répond.
 const FALLBACK_DELAY = 4000;
+
+const categoryIcons = { Network, System: Server, Telecom: Phone, Web: Globe };
 
 const categoryColors = {
   Network: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -21,7 +24,7 @@ export const Projects = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-    const abortTimer = setTimeout(() => controller.abort(), COLD_START_TIMEOUT);
+    const abortTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
     const fallbackTimer = setTimeout(() => {
       setProjects((current) => (current.length ? current : fallbackProjects));
       setLoading(false);
@@ -98,15 +101,17 @@ export const Projects = () => {
               className="bg-[#050505] border border-white/10 rounded-md overflow-hidden hover:border-[#0055FF] transition-all duration-300 hover:shadow-lg group"
               data-testid={`project-card-${idx}`}
             >
-              {project.image_url && (
-                <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
+              <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
+                {project.image_url ? (
                   <img
                     src={resolveImageUrl(project.image_url)}
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                </div>
-              )}
+                ) : (
+                  <ProjectPlaceholder category={project.category} />
+                )}
+              </div>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span
@@ -141,5 +146,15 @@ export const Projects = () => {
         )}
       </div>
     </section>
+  );
+};
+
+// Visuel affiché tant qu'aucune image n'a été ajoutée au projet depuis l'admin.
+const ProjectPlaceholder = ({ category }) => {
+  const Icon = categoryIcons[category] || Server;
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0055FF]/20 via-[#0F0F11] to-[#050505] group-hover:from-[#0055FF]/30 transition-colors duration-300">
+      <Icon className="w-14 h-14 text-[#0055FF]/70" strokeWidth={1.25} />
+    </div>
   );
 };

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Loader2, AlertTriangle } from 'lucide-react';
-import { API, COLD_START_TIMEOUT } from '@/lib/api';
+import { API, REQUEST_TIMEOUT } from '@/lib/api';
 
 const SLOW_DELAY = 3000;
 
-// Prévient l'admin quand le serveur Render se réveille (cold start) ou ne répond pas.
+// Prévient l'admin quand l'API répond lentement ou pas du tout.
 export const BackendStatusBanner = () => {
   const [status, setStatus] = useState('checking');
 
@@ -14,7 +14,7 @@ export const BackendStatusBanner = () => {
     const slowTimer = setTimeout(() => !done && setStatus('slow'), SLOW_DELAY);
 
     axios
-      .get(`${API}/projects`, { timeout: COLD_START_TIMEOUT })
+      .get(`${API}/projects`, { timeout: REQUEST_TIMEOUT })
       .then(() => setStatus('ok'))
       .catch(() => setStatus('down'))
       .finally(() => {
@@ -35,7 +35,7 @@ export const BackendStatusBanner = () => {
         data-testid="backend-status-slow"
       >
         <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-        Le serveur se réveille (jusqu'à 1 minute sur l'offre gratuite de Render). Les données vont s'afficher.
+        Le serveur met du temps à répondre. Les données vont s'afficher.
       </div>
     );
   }
@@ -47,7 +47,7 @@ export const BackendStatusBanner = () => {
         data-testid="backend-status-down"
       >
         <AlertTriangle className="w-4 h-4 shrink-0" />
-        Le serveur ne répond pas. Rechargez la page dans un instant ou vérifiez le service sur Render.
+        Le serveur ne répond pas. Rechargez la page dans un instant ; si le problème persiste, vérifiez la base MongoDB Atlas.
       </div>
     );
   }

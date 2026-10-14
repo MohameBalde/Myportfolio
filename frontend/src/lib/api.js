@@ -1,10 +1,11 @@
-export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// L'API tourne sur le même site (fonction Vercel, /api/*). REACT_APP_API_URL sert
+// uniquement en développement local pour pointer vers une autre adresse.
+export const BACKEND_URL = process.env.REACT_APP_API_URL || '';
 export const API = `${BACKEND_URL}/api`;
 
-// Le backend Render (offre gratuite) s'endort après ~15 min et met jusqu'à ~60 s à se réveiller.
-export const COLD_START_TIMEOUT = 60000;
+// Délai max d'une requête avant d'abandonner (base injoignable, réseau lent).
+export const REQUEST_TIMEOUT = 20000;
 
-
-// Les projets initiaux ont une URL d'image complète ; les images uploadées
-// via l'admin sont servies par le backend (/api/files/...).
+// Les images uploadées via l'admin sont servies par l'API (/api/files/...) ;
+// certaines anciennes images sont des URL complètes.
 export const resolveImageUrl = (url) => (/^https?:\/\//.test(url) ? url : `${BACKEND_URL}${url}`);

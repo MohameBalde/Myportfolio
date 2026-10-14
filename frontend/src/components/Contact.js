@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
-import { API, COLD_START_TIMEOUT } from '@/lib/api';
+import { API, REQUEST_TIMEOUT } from '@/lib/api';
 
 const CONTACT_EMAIL = 'balde8307@gmail.com';
 
@@ -31,7 +31,7 @@ export const Contact = () => {
     const slowTimer = setTimeout(() => setSlow(true), 5000);
 
     try {
-      await axios.post(`${API}/messages`, formData, { timeout: COLD_START_TIMEOUT });
+      await axios.post(`${API}/messages`, formData, { timeout: REQUEST_TIMEOUT });
       toast.success('Message envoyé avec succès !');
       setFormData({ name: '', email: '', message: '' });
     } catch (error) {
@@ -160,7 +160,7 @@ export const Contact = () => {
                 className="w-full bg-[#0055FF] hover:bg-[#3B82F6] hover:shadow-[0_0_15px_rgba(0,85,255,0.5)] transition-all"
                 data-testid="contact-submit-button"
               >
-                {loading ? (slow ? 'Réveil du serveur, patientez...' : 'Envoi...') : 'Envoyer le message'}
+                {loading ? (slow ? 'Envoi en cours, patientez...' : 'Envoi...') : 'Envoyer le message'}
                 <Send className="w-4 h-4 ml-2" />
               </Button>
 

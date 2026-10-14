@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { API } from '@/lib/api';
 import { FolderKanban, MessageSquare, FileText, TrendingUp } from 'lucide-react';
 
 function authHeader() {
@@ -15,9 +16,9 @@ export default function DashboardPage() {
       try {
         const headers = authHeader();
         const [projectsRes, messagesRes, cvRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/projects`, { headers }),
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages`, { headers }),
-          fetch(`${process.env.REACT_APP_BACKEND_URL}/api/cv/current`, { headers })
+          fetch(`${API}/projects`, { headers }),
+          fetch(`${API}/messages`, { headers }),
+          fetch(`${API}/cv/current`, { headers })
         ]);
         const projects = await projectsRes.json();
         const messages = await messagesRes.json();

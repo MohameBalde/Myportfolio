@@ -2,10 +2,10 @@ import React from 'react';
 import { ArrowRight, Download } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { API, COLD_START_TIMEOUT } from '@/lib/api';
+import { API, REQUEST_TIMEOUT } from '@/lib/api';
 
 // Copie statique du CV servie par Vercel (frontend/public/), toujours disponible.
-// Si elle est absente, on se rabat sur le CV stocké via l'admin (API Render).
+// Si elle est absente, on se rabat sur le CV stocké via l'admin (API).
 const STATIC_CV_URL = '/CV_Mohamed_Balde.pdf';
 const CV_FILENAME = 'CV_Mohamed_Balde.pdf';
 const PHOTO_URL = "https://raw.githubusercontent.com/MohameBalde/Myportfolio/main/frontend/src/photo.jpeg";
@@ -28,7 +28,7 @@ export const Hero = () => {
     }
     const response = await axios.get(`${API}/cv/download`, {
       responseType: 'blob',
-      timeout: COLD_START_TIMEOUT
+      timeout: REQUEST_TIMEOUT
     });
     return response.data;
   };
