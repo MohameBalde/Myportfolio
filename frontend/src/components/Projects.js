@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Network, Server, Phone, Globe } from 'lucide-react';
+import { Network, Server, Phone, Globe, ExternalLink, ArrowRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { API, REQUEST_TIMEOUT, resolveImageUrl } from '@/lib/api';
 import { fallbackProjects } from '@/data/fallbackProjects';
+import { categoryLabel } from '@/lib/categories';
 
 // Au-delà de ce délai on affiche les projets de secours ; l'appel continue
 // et remplace ces projets dès que le serveur répond.
@@ -21,6 +23,7 @@ export const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [openProject, setOpenProject] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -89,7 +92,7 @@ export const Projects = () => {
               }`}
               data-testid={`filter-${cat}`}
             >
-              {cat}
+              {cat === 'All' ? 'Tous' : categoryLabel(cat)}
             </button>
           ))}
         </div>
@@ -98,7 +101,16 @@ export const Projects = () => {
           {filteredProjects.map((project, idx) => (
             <div
               key={project.id}
-              className="bg-[#0F0F11] border border-white/10 rounded-md overflow-hidden hover:border-[#0055FF] transition-all duration-300 hover:shadow-lg group"
+              role="button"
+              tabIndex={0}
+              onClick={() => setOpenProject(project)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setOpenProject(project);
+                }
+              }}
+              className="bg-[#0F0F11] border border-white/10 rounded-md overflow-hidden hover:border-[#0055FF] focus:outline-none focus-visible:border-[#0055FF] transition-all duration-300 hover:shadow-lg group cursor-pointer flex flex-col"
               data-testid={`project-card-${idx}`}
             >
               <div className="aspect-video overflow-hidden bg-[#1A1A1D]">
@@ -106,34 +118,23 @@ export const Projects = () => {
                   <img
                     src={resolveImageUrl(project.image_url)}
                     alt={project.title}
+                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <ProjectPlaceholder category={project.category} />
                 )}
               </div>
-              <div className="p-6">
+              <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center justify-between mb-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                      categoryColors[project.category] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                    }`}
-                  >
-                    {project.category}
-                  </span>
+                  <CategoryBadge category={project.category} />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
                 <p className="text-[#A1A1AA] text-sm mb-4 line-clamp-3">{project.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {(project.technologies || '').split(',').map((tech, techIdx) => (
-                    <span
-                      key={techIdx}
-                      className="px-2 py-1 bg-[#1A1A1D] text-[#71717A] text-xs rounded"
-                    >
-                      {tech.trim()}
-                    </span>
-                  ))}
-                </div>
+                <TechTags technologies={project.technologies} />
+                <span className="mt-auto pt-5 inline-flex items-center gap-1 text-sm text-[#0055FF] group-hover:gap-2 transition-all">
+                  Voir le détail <ArrowRight className="w-4 h-4" />
+                </span>
               </div>
             </div>
           ))}
@@ -145,9 +146,73 @@ export const Projects = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={!!openProject} onOpenChange={(open) => !open && setOpenProject(null)}>
+        <DialogContent
+          className="max-w-4xl w-[calc(100%-2rem)] bg-[#0F0F11] border-white/10 text-white p-0 gap-0 max-h-[90vh] overflow-y-auto rounded-md [&>button]:bg-black/70 [&>button]:p-2 [&>button]:rounded-full [&>button]:opacity-100 [&>button]:right-3 [&>button]:top-3"
+          data-testid="project-detail"
+        >
+          {openProject && (
+            <>
+              <div className="aspect-video bg-[#050505]">
+                {openProject.image_url ? (
+                  <img
+                    src={resolveImageUrl(openProject.image_url)}
+                    alt={openProject.title}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <ProjectPlaceholder category={openProject.category} />
+                )}
+              </div>
+              <div className="p-6 md:p-8 space-y-4">
+                <CategoryBadge category={openProject.category} />
+                <DialogTitle className="text-xl md:text-2xl font-bold text-white leading-snug">
+                  {openProject.title}
+                </DialogTitle>
+                <DialogDescription className="text-[#A1A1AA] text-base leading-relaxed whitespace-pre-line">
+                  {openProject.description}
+                </DialogDescription>
+                <TechTags technologies={openProject.technologies} />
+                {openProject.link && (
+                  <a
+                    href={openProject.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-[#0055FF] hover:bg-[#3B82F6] text-white px-5 py-3 rounded-md text-sm font-medium transition-colors"
+                    data-testid="project-detail-link"
+                  >
+                    Voir le projet <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
+
+const CategoryBadge = ({ category }) => (
+  <span
+    className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${
+      categoryColors[category] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+    }`}
+  >
+    {categoryLabel(category)}
+  </span>
+);
+
+const TechTags = ({ technologies }) => (
+  <div className="flex flex-wrap gap-2">
+    {(technologies || '').split(',').filter((tech) => tech.trim()).map((tech) => (
+      <span key={tech} className="px-2 py-1 bg-[#1A1A1D] text-[#71717A] text-xs rounded">
+        {tech.trim()}
+      </span>
+    ))}
+  </div>
+);
 
 // Visuel affiché tant qu'aucune image n'a été ajoutée au projet depuis l'admin.
 const ProjectPlaceholder = ({ category }) => {

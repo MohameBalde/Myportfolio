@@ -1,7 +1,8 @@
 import React from 'react';
 import { GraduationCap, Target } from 'lucide-react';
 
-const PHOTO_URL = "https://raw.githubusercontent.com/MohameBalde/Myportfolio/main/frontend/src/photo.jpeg";
+// Servie par le site (public/photo.webp), version optimisée de src/photo.jpeg.
+const PHOTO_URL = '/photo.webp';
 
 export const About = () => {
   return (

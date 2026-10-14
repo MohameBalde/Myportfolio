@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API, resolveImageUrl } from '@/lib/api';
+import { CATEGORY_LABELS, categoryLabel } from '@/lib/categories';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,8 @@ export default function ProjectsPage() {
     title: '',
     description: '',
     technologies: '',
-    category: 'Network'
+    category: 'Network',
+    link: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -50,7 +52,7 @@ export default function ProjectsPage() {
     setSubmitting(true);
 
     try {
-      const params = `title=${encodeURIComponent(formData.title)}&description=${encodeURIComponent(formData.description)}&technologies=${encodeURIComponent(formData.technologies)}&category=${encodeURIComponent(formData.category)}`;
+      const params = `title=${encodeURIComponent(formData.title)}&description=${encodeURIComponent(formData.description)}&technologies=${encodeURIComponent(formData.technologies)}&category=${encodeURIComponent(formData.category)}&link=${encodeURIComponent(formData.link)}`;
 
       const formDataToSend = new FormData();
       if (imageFile) {
@@ -108,7 +110,8 @@ export default function ProjectsPage() {
       title: project.title,
       description: project.description,
       technologies: project.technologies,
-      category: project.category
+      category: project.category,
+      link: project.link || ''
     });
     setImageFile(null);
     setIsDialogOpen(true);
@@ -117,7 +120,7 @@ export default function ProjectsPage() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingProject(null);
-    setFormData({ title: '', description: '', technologies: '', category: 'Network' });
+    setFormData({ title: '', description: '', technologies: '', category: 'Network', link: '' });
     setImageFile(null);
   };
 
@@ -173,9 +176,20 @@ export default function ProjectsPage() {
                   value={formData.technologies}
                   onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
                   required
-                  placeholder="Ex: React, Node.js, MongoDB"
+                  placeholder="Ex : Zabbix, SNMP, Grafana"
                   className="bg-[#050505] border-white/10 text-white"
                   data-testid="project-technologies-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Lien (optionnel)</label>
+                <Input
+                  type="url"
+                  value={formData.link}
+                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  placeholder="https://… (site en ligne, dépôt GitHub)"
+                  className="bg-[#050505] border-white/10 text-white"
+                  data-testid="project-link-input"
                 />
               </div>
               <div>
@@ -188,10 +202,10 @@ export default function ProjectsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0F0F11] border-white/10">
-                    <SelectItem value="Network">Network</SelectItem>
-                    <SelectItem value="System">System</SelectItem>
-                    <SelectItem value="Telecom">Telecom</SelectItem>
-                    <SelectItem value="Web">Web</SelectItem>
+                    <SelectItem value="Network">{CATEGORY_LABELS.Network}</SelectItem>
+                    <SelectItem value="System">{CATEGORY_LABELS.System}</SelectItem>
+                    <SelectItem value="Telecom">{CATEGORY_LABELS.Telecom}</SelectItem>
+                    <SelectItem value="Web">{CATEGORY_LABELS.Web}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -246,7 +260,7 @@ export default function ProjectsPage() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#0055FF]/10 text-[#0055FF] border border-[#0055FF]/20">
-                  {project.category}
+                  {categoryLabel(project.category)}
                 </span>
                 <div className="flex gap-2">
                   <button

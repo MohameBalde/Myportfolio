@@ -8,7 +8,8 @@ import { API, REQUEST_TIMEOUT } from '@/lib/api';
 // Si elle est absente, on se rabat sur le CV stocké via l'admin (API).
 const STATIC_CV_URL = '/CV_Mohamed_Balde.pdf';
 const CV_FILENAME = 'CV_Mohamed_Balde.pdf';
-const PHOTO_URL = "https://raw.githubusercontent.com/MohameBalde/Myportfolio/main/frontend/src/photo.jpeg";
+// Servie par le site (public/photo.webp), version optimisée de src/photo.jpeg.
+const PHOTO_URL = '/photo.webp';
 
 export const Hero = () => {
   const scrollToProjects = () => {
@@ -54,17 +55,19 @@ export const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background */}
+      {/* Fond : halo bleu et grille légère en CSS, sans image à télécharger */}
       <div
         className="absolute inset-0 z-0"
+        aria-hidden="true"
         style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1775057154553-0f3e8902fea3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhcmslMjBuZXR3b3JrJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3NzU2NjYwOTN8MA&ixlib=rb-4.1.0&q=85)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundColor: '#050505',
+          backgroundImage:
+            'radial-gradient(circle at 50% 40%, rgba(0, 85, 255, 0.22), transparent 55%),' +
+            'linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),' +
+            'linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px)',
+          backgroundSize: '100% 100%, 40px 40px, 40px 40px'
         }}
-      >
-        <div className="absolute inset-0 bg-black/80"></div>
-      </div>
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-24 py-32 text-center">
 
@@ -75,6 +78,7 @@ export const Hero = () => {
               <img
                 src={PHOTO_URL}
                 alt="Mohamed Baldé"
+                fetchPriority="high"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -100,7 +104,7 @@ export const Hero = () => {
           className="text-base sm:text-lg text-[#A1A1AA] max-w-2xl mx-auto mb-4"
           data-testid="hero-subtitle"
         >
-          CCNA | VoIP | Windows Server | WiFi Networks
+          CCNA · VoIP · Windows Server · Supervision réseau
         </p>
 
         <p className="text-base text-[#A1A1AA] max-w-2xl mx-auto mb-12">

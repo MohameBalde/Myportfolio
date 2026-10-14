@@ -41,7 +41,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Network className="w-8 h-8 text-[#0055FF]" />
-            <span className="text-white font-bold text-2xl font-['Outfit']">Admin Panel</span>
+            <span className="text-white font-bold text-2xl font-['Outfit']">Administration</span>
           </div>
           <p className="text-[#A1A1AA] text-sm">Connectez-vous pour accéder au tableau de bord</p>
         </div>

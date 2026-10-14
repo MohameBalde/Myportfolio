@@ -14,7 +14,8 @@ export const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    message: ''
+    message: '',
+    website: '' // champ piège anti-robots, invisible pour les visiteurs
   });
   const [loading, setLoading] = useState(false);
   const [slow, setSlow] = useState(false);
@@ -33,10 +34,14 @@ export const Contact = () => {
     try {
       await axios.post(`${API}/messages`, formData, { timeout: REQUEST_TIMEOUT });
       toast.success('Message envoyé avec succès !');
-      setFormData({ name: '', email: '', message: '' });
+      setFormData({ name: '', email: '', message: '', website: '' });
     } catch (error) {
       setFailed(true);
-      toast.error("Le message n'a pas pu être envoyé. Écrivez-moi directement par email.");
+      toast.error(
+        error.response?.status === 429
+          ? 'Trop de messages envoyés. Réessayez plus tard ou écrivez-moi directement par email.'
+          : "Le message n'a pas pu être envoyé. Écrivez-moi directement par email."
+      );
       console.error('Contact error:', error);
     } finally {
       clearTimeout(slowTimer);
@@ -106,6 +111,18 @@ export const Contact = () => {
 
           <div className="bg-[#050505] border border-white/10 p-8 rounded-md">
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+                <label htmlFor="website">Ne pas remplir ce champ</label>
+                <input
+                  id="website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={handleChange}
+                />
+              </div>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
                   Nom complet
@@ -117,6 +134,7 @@ export const Contact = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  maxLength={100}
                   className="bg-[#0F0F11] border-white/10 text-white"
                   data-testid="contact-name-input"
                 />
@@ -148,6 +166,7 @@ export const Contact = () => {
                   value={formData.message}
                   onChange={handleChange}
                   required
+                  maxLength={5000}
                   rows={5}
                   className="bg-[#0F0F11] border-white/10 text-white"
                   data-testid="contact-message-input"

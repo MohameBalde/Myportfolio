@@ -1,10 +1,14 @@
 """API du portfolio, déployée en fonction serverless Vercel (toutes les routes /api/*).
 
 Données : MongoDB Atlas. Fichiers (CV, images des projets) : GridFS dans la même base.
-Variables d'environnement : MONGO_URL, DB_NAME, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD.
+Variables d'environnement : MONGO_URL, DB_NAME, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD,
+et optionnellement RESEND_API_KEY / NOTIFY_EMAIL pour recevoir un email à chaque message.
 """
+import hashlib
+import json
 import logging
 import os
+import urllib.request
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -15,7 +19,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, FastAPI, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
@@ -23,6 +27,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger("portfolio-api")
 
 JWT_ALGORITHM = "HS256"
+# Anti-spam du formulaire de contact : nombre de messages par expéditeur et par heure.
+MAX_MESSAGES_PER_HOUR = 5
 # Limite de corps de requête des fonctions Vercel : 4,5 Mo.
 MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 
@@ -240,6 +246,14 @@ def store_file(db, upload: UploadFile, default_type: str) -> str:
     return str(file_id)
 
 
+def clean_link(link):
+    """Lien optionnel vers le projet (démo, dépôt GitHub…) : vide ou URL http(s)."""
+    link = (link or "").strip()
+    if link and not link.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="Le lien doit commencer par http:// ou https://")
+    return link or None
+
+
 def delete_file(db, file_url):
     """Supprime une image stockée en GridFS (URL de la forme /api/files/<id>)."""
     if not file_url or not file_url.startswith("/api/files/"):
@@ -257,9 +271,11 @@ class LoginRequest(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    message: str
+    message: str = Field(min_length=1, max_length=5000)
+    # Champ piège invisible pour les humains : seuls les robots le remplissent.
+    website: str = ""
 
 
 # ==================== Health ====================
@@ -309,7 +325,7 @@ def get_projects():
 @api_router.post("/projects")
 def create_project(request: Request, title: str = Query(...), description: str = Query(...),
                    technologies: str = Query(...), category: str = Query(...),
-                   image: UploadFile = File(None)):
+                   link: str = Query(""), image: UploadFile = File(None)):
     require_admin(request)
     db = get_db()
     project = {
@@ -318,6 +334,7 @@ def create_project(request: Request, title: str = Query(...), description: str =
         "description": description,
         "technologies": technologies,
         "category": category,
+        "link": clean_link(link),
         "image_url": f"/api/files/{store_file(db, image, 'image/jpeg')}" if image else None,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -328,14 +345,15 @@ def create_project(request: Request, title: str = Query(...), description: str =
 @api_router.put("/projects/{project_id}")
 def update_project(request: Request, project_id: str, title: str = Query(...),
                    description: str = Query(...), technologies: str = Query(...),
-                   category: str = Query(...), image: UploadFile = File(None)):
+                   category: str = Query(...), link: str = Query(""), image: UploadFile = File(None)):
     require_admin(request)
     db = get_db()
     project = db.projects.find_one({"id": project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    update_data = {"title": title, "description": description, "technologies": technologies, "category": category}
+    update_data = {"title": title, "description": description, "technologies": technologies,
+                   "category": category, "link": clean_link(link)}
     if image:
         update_data["image_url"] = f"/api/files/{store_file(db, image, 'image/jpeg')}"
         delete_file(db, project.get("image_url"))
@@ -356,22 +374,65 @@ def delete_project(request: Request, project_id: str):
 
 
 # ==================== Messages Endpoints ====================
+def sender_hash(request: Request) -> str:
+    """Empreinte de l'expéditeur (IP hachée, jamais stockée en clair) pour limiter le spam."""
+    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    return hashlib.sha256(f"{ip}:{os.environ.get('JWT_SECRET', '')}".encode()).hexdigest()[:24]
+
+
+def notify_new_message(message: dict):
+    """Envoie un email via Resend si RESEND_API_KEY est configurée ; un échec n'empêche pas l'enregistrement."""
+    api_key = os.environ.get("RESEND_API_KEY")
+    if not api_key:
+        return
+    payload = {
+        "from": "Portfolio <onboarding@resend.dev>",
+        "to": [os.environ.get("NOTIFY_EMAIL") or os.environ.get("ADMIN_EMAIL", "balde8307@gmail.com")],
+        "reply_to": message["email"],
+        "subject": f"Nouveau message de {message['name']} (portfolio)",
+        "text": f"{message['message']}\n\n— {message['name']} <{message['email']}>",
+    }
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode(),
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        urllib.request.urlopen(req, timeout=5).close()
+    except Exception as exc:
+        logger.error(f"Email notification failed: {exc}")
+
+
 @api_router.post("/messages")
-def create_message(message_data: MessageCreate):
-    get_db().messages.insert_one({
+def create_message(message_data: MessageCreate, request: Request):
+    if message_data.website:
+        # Robot détecté : on répond comme si tout allait bien, sans rien enregistrer.
+        return {"message": "Message sent successfully"}
+
+    db = get_db()
+    sender = sender_hash(request)
+    since = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    if db.messages.count_documents({"sender": sender, "created_at": {"$gte": since}}) >= MAX_MESSAGES_PER_HOUR:
+        raise HTTPException(status_code=429, detail="Trop de messages envoyés, réessayez plus tard")
+
+    message = {
         "id": str(uuid.uuid4()),
-        "name": message_data.name,
+        "name": message_data.name.strip(),
         "email": message_data.email,
-        "message": message_data.message,
+        "message": message_data.message.strip(),
+        "sender": sender,
         "created_at": datetime.now(timezone.utc).isoformat(),
-    })
+    }
+    db.messages.insert_one(message)
+    notify_new_message(message)
     return {"message": "Message sent successfully"}
 
 
 @api_router.get("/messages")
 def get_messages(request: Request):
     require_admin(request)
-    return list(get_db().messages.find({}, {"_id": 0}).sort("created_at", -1))
+    return list(get_db().messages.find({}, {"_id": 0, "sender": 0}).sort("created_at", -1))
 
 
 @api_router.delete("/messages/{message_id}")

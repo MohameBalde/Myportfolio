@@ -1,31 +1,36 @@
 import React from 'react';
-import { Network, Server, Phone, Code, Database } from 'lucide-react';
+import { Network, Server, Phone, Code, Database, Activity } from 'lucide-react';
 
 const skillsData = [
   {
     category: 'Réseaux',
     icon: Network,
-    skills: ['CCNA', 'Routing & Switching', 'VLANs', 'WiFi Networks', 'Network Security']
+    skills: ['CCNA 1 & 2 : routage et commutation', 'VLANs', 'DNS & DHCP', 'QoS', 'WiFi & portail captif']
   },
   {
-    category: 'Systèmes',
+    category: 'Supervision & Sécurité',
+    icon: Activity,
+    skills: ['Zabbix & SNMP', 'Tableaux de bord Grafana', 'Alertes par seuils', 'Pare-feu : UFW, firewalld', 'Cybersécurité (certificat Google en cours)']
+  },
+  {
+    category: 'Systèmes & Virtualisation',
     icon: Server,
-    skills: ['Windows Server', 'Active Directory', 'GPO', 'Hyper-V', 'DNS & DHCP']
+    skills: ['Windows Server : AD DS, GPO, DNS, DHCP', 'SharePoint & Exchange', 'VMware ESXi & vCenter', 'Veeam Backup & Replication, TrueNAS', 'Linux : Debian, CentOS, AlmaLinux']
   },
   {
     category: 'Télécommunications',
     icon: Phone,
-    skills: ['VoIP', 'Issabel', 'Asterisk', 'SIP Protocol', 'Telephony Systems']
+    skills: ['VoIP : Issabel / Asterisk', 'SIP & plan de numérotation', "Serveur vocal, files d'attente, messagerie vocale", 'Softphones : Zoiper, MicroSIP']
   },
   {
     category: 'Développement',
     icon: Code,
-    skills: ['HTML', 'CSS', 'JavaScript', 'PHP', 'Laravel']
+    skills: ['Python / Flask', 'PHP / Laravel', 'Java / JEE', 'HTML, CSS, JavaScript']
   },
   {
-    category: 'Base de données',
+    category: 'Données & Outils',
     icon: Database,
-    skills: ['MySQL', 'SQL Queries', 'Database Design', 'PhpMyAdmin']
+    skills: ['MySQL / MariaDB', 'Git & GitHub', 'Bash, SSH, cron', 'Déploiement sur Railway']
   }
 ];
 

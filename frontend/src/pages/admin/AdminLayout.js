@@ -27,7 +27,7 @@ export default function AdminLayout() {
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-2 mb-2">
             <Network className="w-6 h-6 text-[#0055FF]" />
-            <span className="text-white font-bold text-xl font-['Outfit']">Admin Panel</span>
+            <span className="text-white font-bold text-xl font-['Outfit']">Administration</span>
           </div>
           <p className="text-[#71717A] text-sm">{user?.email}</p>
         </div>
